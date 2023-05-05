@@ -1,12 +1,11 @@
 import logging
 import re
 from urllib.parse import urljoin
-import requests_cache
-import requests
+import requests_cache, requests
 from bs4 import BeautifulSoup as Bs
 from tqdm import tqdm
 
-from configargparser import configure_argument_parser, configure_logging
+from configargparser import configure_argument_parser
 from outputs import control_output
 from utils import get_response, find_tag, check_key
 from constants import BASE_DIR, MAIN_DOC_URL, PEP, EXPECTED_STATUS, PATTERN
@@ -148,7 +147,6 @@ MODE_TO_FUNCTION = {
 def main():
     parser = configure_argument_parser()
     args = parser.parse_args()
-    configure_logging(args.log_file)
     with requests_cache.CachedSession(backend="memory",
                                       expire_after=args.cache_expire_time
                                       ) as session:
