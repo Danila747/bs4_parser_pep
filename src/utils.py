@@ -1,24 +1,26 @@
 import logging
 
-from requests import RequestException
+from requests import Session, RequestException
+from typing import Optional
+from urllib.parse import urljoin
+from bs4 import BeautifulSoup as Bs
 
 from constants import EXPECTED_STATUS
-from exceptions import ParserFindTagException
+from exceptions import NoTagFound
 
 
-def get_response(session, url):
+def get_response(session: Session, url: str):
     try:
         response = session.get(url)
         response.encoding = "utf-8"
+        response.raise_for_status()
         return response
-    except RequestException:
-        logging.exception(
-            f"Возникла ошибка при загрузке страницы {url}",
-            stack_info=True
-        )
+    except RequestException as e:
+        logging.exception(f"Failed to load page {url}: {e}")
+        return None
 
 
-def find_tag(soup, tag=None, attrs=None, text=None):
+def find_tag(soup: Bs, tag: Optional[str] = None, attrs: Optional[dict] = None, text: Optional[str] = None) -> Optional[Bs]:
     try:
         if text:
             searched_tag = soup.find(text=text)
@@ -28,17 +30,17 @@ def find_tag(soup, tag=None, attrs=None, text=None):
             raise Exception
     except Exception:
         if text:
-            error_msg = f"Тэг, имеющий текст '{text}' не найден"
+            error_msg = f"Tag with text '{text}' not found"
         else:
-            error_msg = f"Не найден тег {tag} {attrs}"
-        logging.error(error_msg, stack_info=True)
-        raise ParserFindTagException(error_msg)
+            error_msg = f"Tag '{tag}' with attributes '{attrs}' not found"
+        logging.error(error_msg, exc_info=True)
+        raise NoTagFound(error_msg)
     else:
         return searched_tag
 
 
-def check_key(key):
+def check_key(key: str) -> bool:
     if key in EXPECTED_STATUS:
         return True
     else:
-        raise KeyError("Такого статуса нет в словаре")
+        raise KeyError("Status key not found in the dictionary")
