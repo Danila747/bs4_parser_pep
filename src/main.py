@@ -168,7 +168,8 @@ def main():
 
             control_output(result)
         except requests.exceptions.ConnectionError:
-            logging.exception("Ошибка соединения. Проверьте подключение к сети.")
+            logging.exception("Ошибка соединения."
+                              "Проверьте подключение к сети.")
         except Exception as e:
             logging.exception(e)
             raise
