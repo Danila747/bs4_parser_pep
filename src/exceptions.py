@@ -1,3 +1,2 @@
-class ParserFindTagException(Exception):
-    """Искомый тэг не найден."""
+class NoTagFound(Exception):
     pass
