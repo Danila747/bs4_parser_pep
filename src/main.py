@@ -1,8 +1,7 @@
 import logging
 import re
-from typing import List
 from urllib.parse import urljoin
-import requests_cache
+import requests_cache, requests
 from bs4 import BeautifulSoup as Bs
 from tqdm import tqdm
 
@@ -145,12 +144,13 @@ MODE_TO_FUNCTION = {
 }
 
 
-
 def main():
     parser = configure_argument_parser()
     args = parser.parse_args()
     configure_logging(args.log_file)
-    with requests_cache.CachedSession(backend="memory", expire_after=args.cache_expire_time) as session:
+    with requests_cache.CachedSession(backend="memory",
+                                      expire_after=args.cache_expire_time
+                                      ) as session:
         try:
             if args.task == "whats_new":
                 result = whats_new(session)
@@ -171,7 +171,6 @@ def main():
         except Exception as e:
             logging.exception(e)
             raise
-
 
 
 if __name__ == "__main__":
