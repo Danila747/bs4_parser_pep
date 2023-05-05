@@ -1,30 +1,26 @@
 import csv
+import datetime as dt
 import logging
-from datetime import datetime
-from pathlib import Path
-from typing import List
 
 from prettytable import PrettyTable
 
-from constants import DATETIME_FORMAT
+from constants import BASE_DIR, DATETIME_FORMAT
 
 
-def control_output(results: List[List[str]], cli_args) -> None:
+def control_output(results, cli_args):
     output = cli_args.output
-    if output == 'pretty':
-        pretty_output(results)
-    elif output == 'file':
-        file_output(results, cli_args)
+    if output == 'file':
+        OUTPUT_TYPES[output](results, cli_args)
     else:
-        default_output(results)
+        OUTPUT_TYPES[output](results)
 
 
-def default_output(results: List[List[str]]) -> None:
+def default_output(results):
     for row in results:
         print(*row)
 
 
-def pretty_output(results: List[List[str]]) -> None:
+def pretty_output(results):
     table = PrettyTable()
     table.field_names = results[0]
     table.align = 'l'
@@ -32,17 +28,22 @@ def pretty_output(results: List[List[str]]) -> None:
     print(table)
 
 
-def file_output(results: List[List[str]], cli_args) -> None:
-    results_dir = Path.cwd() / "results"
+def file_output(results, cli_args):
+    results_dir = BASE_DIR / 'results'
     results_dir.mkdir(exist_ok=True)
-
-    mode = cli_args.mode
-    now = datetime.now().strftime(DATETIME_FORMAT)
-    file_name = f"{mode}_{now}.csv"
+    parser_mode = cli_args.mode
+    now = dt.datetime.now()
+    now_formatted = now.strftime(DATETIME_FORMAT)
+    file_name = f'{parser_mode}_{now_formatted}.csv'
     file_path = results_dir / file_name
-
-    with file_path.open(mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file, dialect="unix", delimiter=";")
+    with open(file_path, 'w', encoding='utf-8') as f:
+        writer = csv.writer(f, dialect='unix')
         writer.writerows(results)
+    logging.info('Файл с результатами был сохранён.')
 
-    logging.info(f"Results saved to file: {file_path}")
+
+OUTPUT_TYPES = {
+    'pretty': pretty_output,
+    'file': file_output,
+    None: default_output,
+}

@@ -1,2 +1,2 @@
-class NoTagFound(Exception):
+class ParserFindTagException(Exception):
     pass

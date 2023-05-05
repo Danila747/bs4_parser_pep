@@ -1,15 +1,16 @@
+import argparse
 import logging
 import re
 from urllib.parse import urljoin
-import requests_cache
+
 import requests
+import requests_cache
 from bs4 import BeautifulSoup as Bs
 from tqdm import tqdm
 
-from configargparser import configure_argument_parser
+from constants import BASE_DIR, EXPECTED_STATUS, MAIN_DOC_URL, PATTERN, PEP
 from outputs import control_output
-from utils import get_response, find_tag, check_key
-from constants import BASE_DIR, MAIN_DOC_URL, PEP, EXPECTED_STATUS, PATTERN
+from utils import check_key, find_tag, get_response
 
 
 def whats_new(session):
@@ -146,7 +147,7 @@ MODE_TO_FUNCTION = {
 
 
 def main():
-    parser = configure_argument_parser()
+    parser = argparse.ArgumentParser()
     args = parser.parse_args()
     with requests_cache.CachedSession(backend="memory",
                                       expire_after=args.cache_expire_time
@@ -167,8 +168,8 @@ def main():
 
             control_output(result)
         except requests.exceptions.ConnectionError:
-            logging.exception("Ошибка соединения."
-                              "Проверьте подключение к сети.")
+            logging.exception(
+                "Ошибка соединения. Проверьте подключение к сети.")
         except Exception as e:
             logging.exception(e)
             raise
