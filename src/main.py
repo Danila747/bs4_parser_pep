@@ -1,22 +1,15 @@
 import logging
 import re
-import requests_cache
-
-from typing import Pattern
+from typing import List
 from urllib.parse import urljoin
+import requests_cache
 from bs4 import BeautifulSoup as Bs
 from tqdm import tqdm
 
-from configs import configure_argument_parser, configure_logging
-from constants import (
-    BASE_DIR,
-    MAIN_DOC_URL,
-    PEP,
-    EXPECTED_STATUS,
-    PATTERN
-)
+from configargparser import configure_argument_parser, configure_logging
 from outputs import control_output
 from utils import get_response, find_tag, check_key
+from constants import BASE_DIR, MAIN_DOC_URL, PEP, EXPECTED_STATUS, PATTERN
 
 
 def whats_new(session):
@@ -24,7 +17,6 @@ def whats_new(session):
     response = get_response(session, whats_new_url)
     if response is None:
         return
-
     soup = Bs(response.text, "lxml")
     section_tag = find_tag(
         soup,
@@ -35,14 +27,11 @@ def whats_new(session):
         section_tag, "div",
         attrs={"class": "toctree-wrapper compound"}
     )
-    li_tag = div_tag.find_all("li", class_="toctree-l1")
-    results = [
-        ('Ссылка на статью', 'Заголовок', 'Редактор, Автор')
-    ]
-    for i in tqdm(li_tag):
-        a_tag = find_tag(i, "a")["href"]
+    li_tags = div_tag.find_all("li", class_="toctree-l1")
+    results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор')]
+    for li_tag in tqdm(li_tags):
+        a_tag = find_tag(li_tag, "a")["href"]
         string = urljoin(whats_new_url, a_tag)
-
         response = get_response(session, string)
         if response is None:
             return
@@ -50,9 +39,7 @@ def whats_new(session):
         h1 = find_tag(soup, "h1")
         dl = find_tag(soup, "dl")
         dl_text = dl.text.replace('\n', ' ')
-        results.append(
-            (string, h1.text, dl_text)
-        )
+        results.append((string, h1.text, dl_text))
     return results
 
 
@@ -61,7 +48,6 @@ def latest_versions(session):
     if response is None:
         return
     soup = Bs(response.text, "lxml")
-
     sidebar = find_tag(soup, "div", attrs={"class": "sphinxsidebarwrapper"})
     ul_tags = sidebar.find_all("ul")
     for ul in tqdm(ul_tags, desc="Поиск тэгов 'a'"):
@@ -70,20 +56,15 @@ def latest_versions(session):
             break
     else:
         raise Exception("Ничего не нашлось!")
-
     pattern = r"Python\s([\d\.]+)\s\((\w{1,}.*)\)"
-    results = [
-        ('Ссылка на документацию', 'Версия', 'Статус')
-    ]
-    for i in tqdm(all_a_tags, desc="Разбор содержимого тэга 'a'"):
-        result = re.search(pattern, i.text)
+    results = [('Ссылка на документацию', 'Версия', 'Статус')]
+    for a_tag in tqdm(all_a_tags, desc="Разбор содержимого тэга 'a'"):
+        result = re.search(pattern, a_tag.text)
         if result:
             version, status = result.groups()
         else:
-            version, status = i.text, ''
-        results.append(
-            (i["href"], version, status)
-        )
+            version, status = a_tag.text, ''
+        results.append((a_tag["href"], version, status))
     return results
 
 
@@ -92,11 +73,10 @@ def download(session):
     response = get_response(session, downloads_url)
     if response is None:
         return
-
     soup = Bs(response.text, "lxml")
     main_role = find_tag(soup, "div", attrs={"role": "main"})
     table = find_tag(main_role, "table", attrs={"class": "docutils"})
-    pattern: Pattern[str] = re.compile(r'.*pdf-a4\.zip$')
+    pattern = re.compile(r'.*pdf-a4\.zip$')
     a_tag = find_tag(table, "a", attrs={"href": pattern})
     pdf_link = a_tag["href"]
 
@@ -165,22 +145,33 @@ MODE_TO_FUNCTION = {
 }
 
 
+
 def main():
-    configure_logging()
-    logging.info("Парсер запущен")
+    parser = configure_argument_parser()
+    args = parser.parse_args()
+    configure_logging(args.log_file)
+    with requests_cache.CachedSession(backend="memory", expire_after=args.cache_expire_time) as session:
+        try:
+            if args.task == "whats_new":
+                result = whats_new(session)
+            elif args.task == "latest_versions":
+                result = latest_versions(session)
+            elif args.task == "download":
+                download(session)
+                return
+            elif args.task == "pep":
+                pep(session)
+                return
+            else:
+                raise ValueError(f"Задача {args.task} не определена")
 
-    arg_parser = configure_argument_parser(MODE_TO_FUNCTION.keys())
-    args = arg_parser.parse_args()
-    logging.info(f"Аргументы командной строки: {args}")
+            control_output(result)
+        except requests.exceptions.ConnectionError:
+            logging.exception("Ошибка соединения. Проверьте подключение к сети.")
+        except Exception as e:
+            logging.exception(e)
+            raise
 
-    session = requests_cache.CachedSession()
-    if args.clear_cache:
-        session.cache.clear()
-    parser_mode = args.mode
-    results = MODE_TO_FUNCTION[parser_mode](session)
-    if results:
-        control_output(results, args)
-    logging.info('Парсер завершил работу.')
 
 
 if __name__ == "__main__":
