@@ -2,7 +2,6 @@ import logging
 
 from requests import Session, RequestException
 from typing import Optional
-from urllib.parse import urljoin
 from bs4 import BeautifulSoup as Bs
 
 from constants import EXPECTED_STATUS
@@ -20,7 +19,9 @@ def get_response(session: Session, url: str):
         return None
 
 
-def find_tag(soup: Bs, tag: Optional[str] = None, attrs: Optional[dict] = None, text: Optional[str] = None) -> Optional[Bs]:
+def find_tag(soup: Bs, tag: Optional[str] = None,
+             attrs: Optional[dict] = None,
+             text: Optional[str] = None) -> Optional[Bs]:
     try:
         if text:
             searched_tag = soup.find(text=text)
