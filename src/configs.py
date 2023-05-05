@@ -10,6 +10,7 @@ from constants import (
     LOG_FORMAT
 )
 
+
 def configure_argument_parser(available_modes):
     """
     Создает аргумент-парсер.
@@ -35,7 +36,8 @@ def configure_argument_parser(available_modes):
     return parser
 
 
-def setup_logging(log_level=logging.INFO, log_format='%(asctime)s %(levelname)s %(name)s %(message)s',
+def setup_logging(log_level=logging.INFO,
+                  log_format='%(asctime)s %(levelname)s %(name)s %(message)s',
                   log_filename='parser.log'):
     """
     Настраивает логирование.
@@ -45,11 +47,9 @@ def setup_logging(log_level=logging.INFO, log_format='%(asctime)s %(levelname)s 
         os.makedirs(log_dir)
 
 
-
 def configure_logging():
     log_dir = BASE_DIR / "logs"
     log_dir.mkdir(exist_ok=True)
-
 
     log_file = log_dir / "parser.log"
     max_log_size = 10 * 1024 * 1024
