@@ -1,7 +1,8 @@
 import logging
 import re
 from urllib.parse import urljoin
-import requests_cache, requests
+import requests_cache
+import requests
 from bs4 import BeautifulSoup as Bs
 from tqdm import tqdm
 
