@@ -1,18 +1,12 @@
-import re
 from pathlib import Path
-
-MAIN_DOC_URL = "https://docs.python.org/3/"
-PEP = "https://peps.python.org/"
+PEP_URL = 'https://peps.python.org/'
 
 BASE_DIR = Path(__file__).parent
 
-DATETIME_FORMAT = "%Y-%m-%d_%H-%M-%S"
-DT_FORMAT = '%d.%m.%Y %H:%M:%S'
+DATETIME_FORMAT = '%Y-%m-%d_%H-%M-%S'
+DATETIME_FORMAT_2 = '%d.%m.%Y %H:%M:%S'
 
 LOG_FORMAT = '"%(asctime)s - [%(levelname)s] - %(message)s"'
-
-
-PATTERN = re.compile("^Status$")
 
 EXPECTED_STATUS = {
     'A': ['Active', 'Accepted'],
@@ -24,3 +18,6 @@ EXPECTED_STATUS = {
     'W': ['Withdrawn'],
     '': ['Draft', 'Active'],
 }
+
+LOG_DIR = BASE_DIR / 'logs'
+RESULTS_DIR = BASE_DIR / 'results'
