@@ -1,22 +1,28 @@
 import argparse
 import logging
 from logging.handlers import RotatingFileHandler
-import sys
 
-from constants import DT_FORMAT, LOG_FORMAT, LOG_DIR
+from constants import DATETIME_FORMAT_2, LOG_FORMAT, LOG_DIR
 
 
 def configure_argument_parser(available_modes):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Парсер документации Python')
     parser.add_argument(
-        '--clear-cache',
-        action='store_true',
-        help='Очистить кэш'
+        'mode',
+        choices=available_modes,
+        help='Режимы работы парсера'
     )
     parser.add_argument(
+        '-c',
+        '--clear-cache',
+        action='store_true',
+        help='Очистка кеша'
+    )
+    parser.add_argument(
+        '-o',
         '--output',
-        choices=('pretty'),
-        help='Способ вывода'
+        choices=('pretty', 'file'),
+        help='Дополнительные способы вывода данных'
     )
     return parser
 
@@ -28,8 +34,8 @@ def configure_logging():
         log_file, maxBytes=10 ** 6, backupCount=5
     )
     logging.basicConfig(
-        datefmt=DT_FORMAT,
+        datefmt=DATETIME_FORMAT_2,
         format=LOG_FORMAT,
         level=logging.INFO,
-        handlers=(rotating_handler, logging.StreamHandler(sys.stdout))
+        handlers=(rotating_handler, logging.StreamHandler())
     )
