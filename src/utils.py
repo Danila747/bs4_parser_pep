@@ -1,10 +1,7 @@
 import logging
-from typing import Optional
 
-from bs4 import BeautifulSoup as Bs
 from requests import RequestException, Session
 
-from constants import EXPECTED_STATUS
 from exceptions import ParserFindTagException
 
 
