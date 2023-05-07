@@ -21,7 +21,7 @@ def main():
     count_status_in_card = defaultdict(int)
     result = [('Статус', 'Количество')]
 
-    for i, row in enumerate(tqdm(peps_row[1:], desc="Scrapping PEPs Status")):
+    for i, row in enumerate(tqdm(peps_row[1:])):
         pep_href_tag = row.a['href']
         pep_link = urljoin(MAIN_PEP_URL, pep_href_tag)
         response = get_response(session, pep_link)
