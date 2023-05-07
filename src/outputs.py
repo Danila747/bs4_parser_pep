@@ -1,6 +1,7 @@
 import csv
 import datetime as dt
 import logging
+from pathlib import Path
 
 from prettytable import PrettyTable
 
@@ -9,10 +10,7 @@ from constants import BASE_DIR, DATETIME_FORMAT
 
 def control_output(results, cli_args):
     output = cli_args.output
-    if output == 'file':
-        OUTPUT_TYPES[output](results, cli_args)
-    else:
-        OUTPUT_TYPES[output](results)
+    OUTPUT_TYPES[output](results)
 
 
 def default_output(results):
@@ -29,21 +27,19 @@ def pretty_output(results):
 
 
 def file_output(results, cli_args):
-    results_dir = BASE_DIR / 'results'
+    results_dir = Path(BASE_DIR, 'results')
     results_dir.mkdir(exist_ok=True)
-    parser_mode = cli_args.mode
     now = dt.datetime.now()
     now_formatted = now.strftime(DATETIME_FORMAT)
-    file_name = f'{parser_mode}_{now_formatted}.csv'
-    file_path = results_dir / file_name
+    file_name = f'pep_{now_formatted}.csv'
+    file_path = Path(results_dir, file_name)
     with open(file_path, 'w', encoding='utf-8') as f:
         writer = csv.writer(f, dialect='unix')
         writer.writerows(results)
-    logging.info('Файл с результатами был сохранён.')
+    logging.info(f'Файл с результатами был сохранён: {file_path}')
 
 
 OUTPUT_TYPES = {
     'pretty': pretty_output,
-    'file': file_output,
-    None: default_output,
+     None: default_output,
 }
