@@ -132,14 +132,19 @@ def main():
     logging.info('Парсер запущен!')
     arg_parser = configure_argument_parser(MODE_TO_FUNCTION.keys())
     args = arg_parser.parse_args()
-    logging.info(f'Аргументы командной строки: {args}')
-    session = requests_cache.CachedSession()
-    if args.clear_cache:
-        session.cache.clear()
-    parser_mode = args.mode
-    results = MODE_TO_FUNCTION[parser_mode](session)
-    if results is not None:
-        control_output(results, args)
+    logging.info(
+        f'Аргументы командной строки: {args}')
+    try:
+        session = requests_cache.CachedSession()
+        if args.clear_cache:
+            session.cache.clear()
+        parser_mode = args.mode
+        results = MODE_TO_FUNCTION[parser_mode](session)
+
+        if results is not None:
+            control_output(results, args)
+    except Exception:
+        logging.exception('Ошибка при выполнении.', stack_info=True)
     logging.info('Парсер завершил работу.')
 
 
