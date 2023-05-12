@@ -59,7 +59,7 @@ def latest_versions(session):
         link = a_tag['href']
         text_match = re.search(pattern, a_tag.text)
         version, status = (
-        text_match.groups() if text_match else (a_tag.text, '')
+            text_match.groups() if text_match else (a_tag.text, '')
         )
 
         results.append((link, version, status))
@@ -109,9 +109,8 @@ def pep(session):
 
         card_status = tag.next_sibling.next_sibling.string
         count_status_in_card[card_status] = (
-        count_status_in_card.get(card_status, 0) + 1
+            count_status_in_card.get(card_status, 0) + 1
         )
-
 
         if len(peps_row[i].td.text) != 1:
             table_status = peps_row[i].td.text[1:]
