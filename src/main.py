@@ -128,7 +128,6 @@ def pep(session):
     return result
 
 
-
 MODE_TO_FUNCTION = {
     'whats-new': whats_new,
     'latest-versions': latest_versions,
