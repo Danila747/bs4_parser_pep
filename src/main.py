@@ -123,11 +123,10 @@ def pep(session):
                     f'Ожидаемые статусы: {EXPECTED_STATUS[table_status]}\n'
                 )
 
-    for key in count_status_in_card:
-        result.append((key, str(count_status_in_card[key])))
-
+    result.extend(list(count_status_in_card.items()))
     result.append(('Total', len(peps_row) - 1))
     return result
+
 
 
 MODE_TO_FUNCTION = {
